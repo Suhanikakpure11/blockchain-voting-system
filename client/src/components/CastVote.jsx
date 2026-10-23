@@ -249,28 +249,59 @@ export default function CastVote({
 
   // Submit Vote to Smart Contract
   const handleConfirmAndSealBallot = async () => {
-    if (!contract || !signer) {
-      setErrorMsg("Blockchain signer not initialized. Please connect wallet.");
-      return;
-    }
-
     setIsSubmittingVote(true);
     setErrorMsg("");
 
     try {
-      const tx = await contract.castVote(selectedCandidate.id);
-      const receipt = await tx.wait();
+      let receiptObj = null;
 
-      const receiptObj = {
-        txHash: receipt.hash,
-        blockNumber: receipt.blockNumber,
-        candidateName: selectedCandidate.name,
-        party: selectedCandidate.party,
-        voterName,
-        voterId,
-        ballotTitle: "2026 Annual Campus Election",
-        timestamp: new Date().toLocaleTimeString(),
-      };
+      // 1. If contract and signer exist in browser (MetaMask / injected provider)
+      if (contract && signer) {
+        try {
+          const tx = await contract.castVote(selectedCandidate.id);
+          const receipt = await tx.wait();
+          receiptObj = {
+            txHash: receipt.hash,
+            blockNumber: receipt.blockNumber,
+            candidateName: selectedCandidate.name,
+            party: selectedCandidate.party,
+            voterName,
+            voterId,
+            ballotTitle: "2026 Annual Campus Election",
+            timestamp: new Date().toLocaleTimeString(),
+          };
+        } catch (directErr) {
+          console.warn("Direct browser wallet call failed, attempting server relay...", directErr.message);
+        }
+      }
+
+      // 2. If direct call not completed, use backend relay API (works anywhere on Render)
+      if (!receiptObj) {
+        const relayRes = await fetch("/api/vote/cast", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            voterId,
+            candidateId: selectedCandidate.id,
+          }),
+        });
+
+        const relayData = await relayRes.json();
+        if (!relayRes.ok || !relayData.success) {
+          throw new Error(relayData.error || "Failed to seal ballot on blockchain");
+        }
+
+        receiptObj = {
+          txHash: relayData.txHash,
+          blockNumber: relayData.blockNumber,
+          candidateName: selectedCandidate.name,
+          party: selectedCandidate.party,
+          voterName,
+          voterId,
+          ballotTitle: "2026 Annual Campus Election",
+          timestamp: new Date().toLocaleTimeString(),
+        };
+      }
 
       setTxReceipt(receiptObj);
 
@@ -282,7 +313,7 @@ export default function CastVote({
 
       stopCamera();
       setStep(3);
-      refreshElectionData();
+      if (refreshElectionData) refreshElectionData();
     } catch (err) {
       console.error("Ballot submission error:", err);
       const reason = err.reason || err.data?.message || err.message;

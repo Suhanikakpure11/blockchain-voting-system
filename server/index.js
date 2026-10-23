@@ -464,6 +464,74 @@ app.get("/api/audit-trail", async (req, res) => {
   }
 });
 
+// Relay Vote Casting: Enables voting on Render cloud without local MetaMask node
+const HARDHAT_DEFAULT_KEYS = {
+  "0xf39fd6e51aad88f6f4cea6b8827279cfffb92266": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+  "0x70997970c51812dc3a010c7d01b50e0d17dc79c8": "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+  "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc": "0x5de4111afa1a4b94908f83103eb2f958080a149f21341a3e509c1630c79f3131",
+  "0x90f79bf6eb2c4f870365e785982e1f101e93b906": "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
+};
+
+app.post("/api/vote/cast", async (req, res) => {
+  try {
+    const { voterId, candidateId } = req.body;
+    if (!voterId || !candidateId) {
+      return res.status(400).json({ error: "voterId and candidateId are required" });
+    }
+
+    const { contract, provider } = getBlockchainDetails();
+    if (!contract || !provider) {
+      return res.status(503).json({ error: "Blockchain node is currently unavailable" });
+    }
+
+    const voters = getVoters();
+    const voter = voters.find((v) => v.voterId.toLowerCase() === voterId.toLowerCase());
+    if (!voter) {
+      return res.status(404).json({ error: `Voter ID ${voterId} not found in registry` });
+    }
+
+    const pkey = HARDHAT_DEFAULT_KEYS[voter.walletAddress.toLowerCase()];
+    if (!pkey) {
+      return res.status(400).json({ error: `No signer key available for voter address ${voter.walletAddress}` });
+    }
+
+    const voterSigner = new ethers.Wallet(pkey, provider);
+    const voterContract = contract.connect(voterSigner);
+
+    const tx = await voterContract.castVote(Number(candidateId));
+    const receipt = await tx.wait();
+
+    res.json({
+      success: true,
+      txHash: receipt.hash,
+      blockNumber: receipt.blockNumber,
+      voterId: voter.voterId,
+      voterName: voter.name,
+      candidateId: Number(candidateId),
+    });
+  } catch (error) {
+    const reason = error.reason || error.data?.message || error.message;
+    console.error("Relay vote error:", reason);
+    res.status(400).json({ error: reason });
+  }
+});
+
+// Serve frontend client build in production (Single Unified Service on Render)
+const CLIENT_DIST = path.join(__dirname, "../client/dist");
+if (fs.existsSync(CLIENT_DIST)) {
+  app.use(express.static(CLIENT_DIST));
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+      return next();
+    }
+    const indexPath = path.join(CLIENT_DIST, "index.html");
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+    next();
+  });
+}
+
 app.listen(PORT, () => {
   console.log(`=================================================`);
   console.log(`SSGMCE Voting Backend Server running on port ${PORT}`);
