@@ -1,0 +1,23 @@
+{
+  "name": "blockchain-voting-system",
+  "version": "1.0.0",
+  "description": "Decentralized Voting System Using Face Recognition and Blockchain - SSGMCE Shegaon",
+  "scripts": {
+    "node": "hardhat node",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.js --network localhost",
+    "server": "node server/index.js",
+    "client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build",
+    "start": "node scripts/start.js",
+    "start:concurrent": "concurrently -k -n \"ETH-CHAIN,NODE-API,REACT-UI\" -c \"yellow,cyan,magenta\" \"npm run node\" \"npm run server\" \"npm run client\""
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "concurrently": "^9.1.2",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.18"
+  }
+}
