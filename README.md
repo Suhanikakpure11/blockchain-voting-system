@@ -1,21 +1,5 @@
 # Decentralized Voting System Using Face Recognition and Blockchain
 
-**SHRI SANT GAJANAN MAHARAJ COLLEGE OF ENGINEERING, SHEGAON**  
-**DEPARTMENT OF COMPUTER SCIENCE & ENGINEERING**  
-*Final Year, Seventh Semester | Autumn/Winter Session 2026-2027*  
-*Subject:* **Blockchain Fundamentals (7KS05) TEC**
-
----
-
-### Student Details
-- **Shravani Raut** [Roll No: 27]
-- **Shreya Katole** [Roll No: 28]
-- **Suhani Kakpure** [Roll No: 33]
-
-**Project Guide:** Prof. Dr. N. M. Kandoi, *Professor, Dept. of CSE*
-
----
-
 ## 📌 Project Overview & Abstract
 
 Traditional voting systems face critical vulnerabilities including voter impersonation, unauthorized voting, duplicate voting, and centralized tampering of tally records. This project implements a **Decentralized Voting System Using Face Recognition and Blockchain**, where:
