@@ -11,11 +11,11 @@
 
 ### 🚀 Live Cloud Deployment on Render
 
-This project is fully configured for continuous deployment on **Render.com** as a unified Web Service:
+This project is fully configured and actively deployed on **Render.com** as a unified Web Service:
 
-- **1-Click Blueprint Deploy**: [Deploy to Render](https://render.com/deploy?repo=https://github.com/Suhanikakpure11/blockchain-voting-system)
+- **Live Deployed Application**: [https://blockchain-voting-system-ucl9.onrender.com/](https://blockchain-voting-system-ucl9.onrender.com/)
 - **GitHub Repository**: [https://github.com/Suhanikakpure11/blockchain-voting-system](https://github.com/Suhanikakpure11/blockchain-voting-system)
-- **Live URL**: `https://blockchain-voting-system.onrender.com` (or your assigned Render domain)
+- **1-Click Blueprint Deploy**: [Deploy to Render](https://render.com/deploy?repo=https://github.com/Suhanikakpure11/blockchain-voting-system)
 - **Build Command**: `npm run render-build`
 - **Start Command**: `npm start`
 
